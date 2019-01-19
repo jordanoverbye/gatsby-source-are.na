@@ -1,10 +1,10 @@
 const path = require(`path`)
 
-exports.createPages = ({ graphql, actions }) => {
+exports.createPages = async ({ graphql, actions }) => {
   const { createPage } = actions
   const pageTemplate = path.resolve(`src/templates/page.js`)
 
-  return graphql(`
+  const pages = await graphql(`
     {
       allArenaChannel {
         edges {
@@ -14,19 +14,15 @@ exports.createPages = ({ graphql, actions }) => {
         }
       }
     }
-  `).then(result => {
-    if (result.errors) {
-      throw result.errors
-    }
+  `)
 
-    result.data.allArenaChannel.edges.forEach(edge => {
-      createPage({
-        path: `${edge.node.slug}`,
-        component: pageTemplate,
-        context: {
-          slug: edge.node.slug,
-        },
-      })
+  pages.data.allArenaChannel.edges.forEach(edge => {
+    createPage({
+      path: `${edge.node.slug}`,
+      component: pageTemplate,
+      context: {
+        slug: edge.node.slug,
+      },
     })
   })
 }
