@@ -17,7 +17,6 @@ exports.sourceNodes = async (
   await Promise.all(
     configOptions.channelSlugs.map(async slug => {
       const channelData = await arena.channel(slug).get({ page: 1, per: 999 })
-      console.log(channelData)
       const contents = await Promise.all(
         channelData.contents.map(async content => {
           let fileNode
