@@ -2,6 +2,8 @@
 
 Source plugin for pulling data into Gatsby from [are.na](https://are.na/)
 
+Check out a very basic live demo [here](https://gatsby-source-arena-basic-example.netlify.com/). The source code for this is in the examples/basic folder.
+
 ## Installation
 
 ```
