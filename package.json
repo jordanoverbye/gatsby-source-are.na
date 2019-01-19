@@ -1,0 +1,26 @@
+{
+  "name": "gatsby-source-are.na",
+  "version": "0.0.1",
+  "description": "gatsby source plugin for are.na",
+  "respository": {
+    "type": "git",
+    "url": "jordanoverbye/gatsby-source-are.na"
+  },
+  "keywords": [
+    "gatsby",
+    "gatsby-plugin",
+    "are.na",
+    "source",
+    "are.na-as-a-cms"
+  ],
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Jordan Overbye",
+  "dependencies": {
+    "are.na": "^0.1.1",
+    "gatsby-source-filesystem": "^2.0.16"
+  }
+}
