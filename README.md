@@ -58,7 +58,7 @@ Query a specific channel
 
 ```
 {
-  arenaChannel(id: { slug: "some-slug" }) {
+  arenaChannel(slug: { eq: "some-slug" }) {
     title
   }
 }
