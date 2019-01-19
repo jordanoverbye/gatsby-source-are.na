@@ -18,7 +18,7 @@ yarn add gatsby-source-are.na
 
 ## Requirements
 
-1. You will need to generate an access token from [dev.are.na](https://dev.are.na/)
+You will first need to generate an access token from [dev.are.na](https://dev.are.na/)
 
 ## How to use
 
