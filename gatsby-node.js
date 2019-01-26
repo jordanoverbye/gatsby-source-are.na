@@ -1,89 +1,169 @@
-const { createRemoteFileNode } = require('gatsby-source-filesystem')
-const Arena = require('are.na')
+const { createRemoteFileNode } = require('gatsby-source-filesystem');
+const Arena = require('are.na');
 
-exports.sourceNodes = async (
-  { actions, createNodeId, createContentDigest, store, cache },
-  configOptions
-) => {
-  const { createNode, createNodeField } = actions
+exports.sourceNodes = async (helpers, configOptions) => {
+  // Check the config options
+  const hasValidConfigOptions = verifyConfigOptions(configOptions);
+  if (!hasValidConfigOptions) return false;
 
-  if (!configOptions.accessToken) {
-    console.error('Access token is required for gatsby-source-are.na')
-    return
-  }
-
-  const arena = new Arena({ accessToken: configOptions.accessToken })
+  // Create a new instance of Arena. This is what we will use to get data from are.na
+  const arena = new Arena({ accessToken: configOptions.accessToken });
 
   await Promise.all(
     configOptions.channelSlugs.map(async slug => {
-      const channelData = await arena.channel(slug).get({ page: 1, per: 999 })
-      const contents = await Promise.all(
-        channelData.contents.map(async content => {
-          let fileNode
-          if (content.image) {
-            try {
-              fileNode = await createRemoteFileNode({
-                url: content.image.original.url,
-                store,
-                cache,
-                createNode,
-                createNodeId: id => `ArenaChannelContentImage-${id}`,
-              })
-            } catch (error) {
-              console.warn(
-                'Error creating ArenaChannelContentImage node',
-                error
-              )
-            }
+      // Get all the data for the channel
+      const channel = await arena.channel(slug).get({ page: 1, per: 999 });
+
+      // Create a node id for the channel. The reason we do this here is so we can pass it as the parent for child nodes.
+      const channelNodeId = helpers.createNodeId(`arena-channel-${channel.id}`);
+
+      // Map over every item in the channel and either return null or the node id of the child.
+      // We need the child node ids to make a parent/child connection
+      const channelChildrenNodeIds = await Promise.all(
+        channel.contents.map(async item => {
+          if (item.base_class === 'Block') {
+            return await createArenaBlockNode(item, channelNodeId, helpers);
           }
-          return {
-            itemId: content.id,
-            title: content.title,
-            slug: content.slug,
-            status: content.status,
-            metadata: content.metadata,
-            base_class: content.base_class,
-            image: fileNode,
-            image___NODE: fileNode ? fileNode.id : null,
-            updated_at: content.updated_at,
-            created_at: content.created_at,
-            content: content.content,
-            content_html: content.content_html,
-            description: content.description,
-            description_html: content.description_html,
-            source: content.source,
+
+          if (item.base_class === 'Channel') {
+            const innerChannel = await arena
+              .channel(item.slug)
+              .get({ page: 1, per: 999 });
+            const innerChannelNodeId = helpers.createNodeId(
+              `arena-inner-channel-${item.id}`
+            );
+            const innerContents = await Promise.all(
+              innerChannel.contents.map(async item => {
+                if (item.base_class === 'Block') {
+                  return await createArenaBlockNode(
+                    item,
+                    innerChannelNodeId,
+                    helpers
+                  );
+                }
+                return null;
+              })
+            );
+            const innerChildrenIds = innerContents.filter(i => i);
+            await createArenaChannelNode(
+              innerChannelNodeId,
+              innerChannel,
+              channelNodeId,
+              innerChildrenIds,
+              true,
+              helpers
+            );
+            return innerChannelNodeId;
           }
         })
-      )
+      ).filter(i => i);
 
-      const cleanChannelData = {
-        channelId: channelData.id,
-        title: channelData.title,
-        created_at: channelData.created_at,
-        updated_at: channelData.updated_at,
-        added_to_at: channelData.added_to_at,
-        published: channelData.published,
-        slug: channelData.slug,
-        status: channelData.status,
-        metadata: channelData.metadata,
-        contents: contents,
-      }
+      await createArenaChannelNode(
+        channelNodeId,
+        channel,
+        null,
+        channelChildrenNodeIds,
+        false,
+        helpers
+      );
 
-      const nodeContent = JSON.stringify(cleanChannelData)
-      const nodeMeta = {
-        id: createNodeId(`arena-channel-${slug}`),
-        parent: null,
-        children: [],
-        internal: {
-          type: `ArenaChannel`,
-          content: nodeContent,
-          contentDigest: createContentDigest(cleanChannelData),
-        },
-      }
-      const node = Object.assign({}, cleanChannelData, nodeMeta)
-      createNode(node)
+      return null;
     })
-  )
+  );
+  return;
+};
 
-  return
+function verifyConfigOptions(configOptions) {
+  if (
+    !configOptions.accessToken ||
+    typeof configOptions.accessToken !== 'string'
+  ) {
+    console.error('Please pass in a valid accessToken to gatsby-source-are.na');
+    return false;
+  }
+  if (
+    !configOptions.channelSlugs ||
+    typeof configOptions.channelSlugs !== 'object'
+  ) {
+    console.error(
+      'Please pass in at least 1 channelSlug to gatsby-source-are.na'
+    );
+    return false;
+  }
+  return true;
+}
+
+async function createArenaChannelNode(
+  id,
+  channel,
+  parent,
+  childrenIds,
+  isInner,
+  { actions: { createNode }, createContentDigest }
+) {
+  const channelData = {
+    channelId: channel.id,
+    title: channel.title,
+    created_at: channel.created_at,
+    updated_at: channel.updated_at,
+    added_to_at: channel.added_to_at,
+    published: channel.published,
+    slug: channel.slug,
+    status: channel.status,
+    metadata: channel.metadata,
+  };
+
+  const nodeData = {
+    id: id,
+    parent: parent,
+    children: [...childrenIds],
+    internal: {
+      type: isInner ? `ArenaInnerChannel` : `ArenaChannel`,
+      content: JSON.stringify(channelData),
+      contentDigest: createContentDigest(channelData),
+    },
+  };
+
+  await createNode(Object.assign({}, channelData, nodeData));
+  return null;
+}
+
+async function createArenaBlockNode(
+  block,
+  parentId,
+  { actions: { createNode }, createNodeId, createContentDigest, store, cache }
+) {
+  let fileNode;
+  if (block.image) {
+    try {
+      fileNode = await createRemoteFileNode({
+        url: block.image.original.url,
+        store,
+        cache,
+        createNode,
+        createNodeId: id => `ArenaImage-${id}`,
+      });
+    } catch (error) {
+      console.warn('Error creating ArenaImage node', error);
+    }
+  }
+
+  const blockWithImageNode = Object.assign({}, block, {
+    image: fileNode,
+    image___NODE: fileNode ? fileNode.id : null,
+  });
+
+  const nodeId = createNodeId(`arena-block-${block.id}`);
+  const nodeData = {
+    id: nodeId,
+    parent: parentId,
+    children: null,
+    internal: {
+      type: `ArenaBlock`,
+      content: JSON.stringify(blockWithImageNode),
+      contentDigest: createContentDigest(blockWithImageNode),
+    },
+  };
+  await createNode(Object.assign({}, blockWithImageNode, nodeData));
+  return nodeId;
 }
