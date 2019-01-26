@@ -9,20 +9,28 @@ exports.createPages = async ({ graphql, actions }) => {
       allArenaChannel {
         edges {
           node {
-            slug
+            children {
+              __typename
+              ... on ArenaInnerChannel {
+                slug
+              }
+            }
           }
         }
       }
     }
   `)
-
   pages.data.allArenaChannel.edges.forEach(edge => {
-    createPage({
-      path: `${edge.node.slug}`,
-      component: pageTemplate,
-      context: {
-        slug: edge.node.slug,
-      },
-    })
+    edge.node.children
+      .filter(item => item.__typename === 'ArenaInnerChannel')
+      .forEach(child => {
+        createPage({
+          path: `${child.slug}`,
+          component: pageTemplate,
+          context: {
+            slug: child.slug,
+          },
+        })
+      })
   })
 }

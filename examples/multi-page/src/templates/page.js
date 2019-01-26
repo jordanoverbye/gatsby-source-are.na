@@ -1,18 +1,34 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import Img from 'gatsby-image'
 import { graphql } from 'gatsby'
 import Layout from '../components/Layout'
-import ContentItem from '../components/ContentItem'
+import SEO from '../components/Seo'
 
 const PageTemplate = ({ data }) => {
-  const { title, metadata, contents } = data.arenaChannel
+  const {
+    title,
+    metadata: { description },
+    children,
+  } = data.arenaInnerChannel
   return (
     <Layout>
-      <h1>{title}</h1>
-      <p>{metadata.description}</p>
-      {contents.map((item, index) => (
-        <ContentItem key={index} item={item} />
-      ))}
+      <SEO title={title} />
+      <section className="margin-bottom-m">
+        <h1 className="margin-bottom-xs">{title}</h1>
+        <p className="no-margin">{description}</p>
+      </section>
+      <section>
+        {children
+          .filter(item => item.__typename === 'ArenaBlock')
+          .map((item, index) => {
+            return (
+              <div className="margin-bottom-s" key={index}>
+                <Img fluid={item.image.childImageSharp.fluid} />
+              </div>
+            )
+          })}
+      </section>
     </Layout>
   )
 }
@@ -25,21 +41,19 @@ export default PageTemplate
 
 export const pageQuery = graphql`
   query($slug: String!) {
-    arenaChannel(slug: { eq: $slug }) {
+    arenaInnerChannel(slug: { eq: $slug }) {
       title
       metadata {
         description
       }
-      contents {
-        base_class
-        content_html
-        description_html
-        title
-        image {
-          childImageSharp {
-            fluid(maxWidth: 700) {
-              # Choose either the fragment including a small base64ed image, a traced placeholder SVG, or one without.
-              ...GatsbyImageSharpFluid_noBase64
+      children {
+        __typename
+        ... on ArenaBlock {
+          image {
+            childImageSharp {
+              fluid(maxWidth: 1280) {
+                ...GatsbyImageSharpFluid_noBase64
+              }
             }
           }
         }
