@@ -1,8 +1,6 @@
 # gatsby-source-are.na
 
-Source plugin for pulling data into Gatsby from [are.na](https://are.na/)
-
-Check out a very basic live demo [here](https://gatsby-source-arena-basic-example.netlify.com/). The source code for this is in the examples/basic folder.
+A [gatsby](https://www.gatsbyjs.org/) source plugin for pulling data from [are.na](https://are.na/). Check out the examples in the `/examples` folder for how this plugin could be used as a lightweight CMS for a image board or portfolio.
 
 ## Installation
 
@@ -18,7 +16,7 @@ yarn add gatsby-source-are.na
 
 ## Requirements
 
-You will first need to generate an access token from [dev.are.na](https://dev.are.na/)
+You will first need to generate an access token from [dev.are.na](https://dev.are.na/) which will be passed into via `gatsby-config.js`.
 
 ## How to use
 
@@ -31,10 +29,7 @@ plugins: [
     resolve: 'gatsby-source-are.na',
     options: {
       accessToken: 'xxxx',
-      channelSlugs: [
-        'slug-1',
-        'slug-2',
-      ],
+      channelSlugs: ['slug-1', 'slug-2'],
     }
   },
 ]
@@ -42,14 +37,33 @@ plugins: [
 
 ## Querying Data
 
-Query all the channels
+Query all channels passed in via `channelSlugs`.
 
 ```
 {
   allArenaChannels {
     edges {
       node {
-        title
+      slug
+      children {
+        __typename
+        ... on ArenaInnerChannel {
+          title
+          slug
+          children {
+            __typename
+            ... on ArenaBlock {
+              title
+              image {
+                childImageSharp {
+                  fluid(maxWidth: 1280) {
+                    ...GatsbyImageSharpFluid_noBase64
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
   }
@@ -61,6 +75,16 @@ Query a specific channel
 ```
 {
   arenaChannel(slug: { eq: "some-slug" }) {
+    title
+  }
+}
+```
+
+Query a specific inner channel
+
+```
+{
+  arenaInnerChannel(slug: { eq: "some-slug" }) {
     title
   }
 }
