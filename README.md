@@ -1,6 +1,6 @@
 # gatsby-source-are.na
 
-A [gatsby](https://www.gatsbyjs.org/) source plugin for pulling data from [are.na](https://are.na/). Check out the examples in the `/examples` folder for how this plugin could be used as a lightweight CMS for a image board or portfolio.
+Source plugin for pulling data into [gatsby](https://www.gatsbyjs.org/) from [are.na](https://are.na/). Check out the examples in the `/examples` folder for how this plugin could be used as a lightweight CMS for a image board or portfolio.
 
 ## Installation
 
