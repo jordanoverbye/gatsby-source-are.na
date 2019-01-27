@@ -2,46 +2,44 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import Img from 'gatsby-image'
 
-const ContentItem = ({ item }) => {
-  switch (item.base_class) {
-    case 'Block':
-      return <Block item={item} />
-    case 'Channel':
-      return null // TODO
-    default:
-      return null
-  }
-}
-
-const Block = ({ item }) => {
+const ArenaBlock = ({
+  item: { image, content_html, title, description_html, source },
+}) => {
   return (
     <article>
-      {item.image && (
+      {image && (
         <div style={{ marginBottom: '0.5rem' }}>
-          {item.image && <Img fluid={item.image.childImageSharp.fluid} />}
+          {image && <Img fluid={image.childImageSharp.fluid} />}
         </div>
       )}
-      {item.content_html && (
+      {content_html && (
         <div
-          dangerouslySetInnerHTML={{ __html: item.content_html }}
+          dangerouslySetInnerHTML={{ __html: content_html }}
           style={{ backgroundColor: '#222', color: '#fff', padding: '1rem' }}
         />
       )}
-      {item.title && (
+      {title && (
         <div>
-          <span>{item.title}</span>
+          <span>{title}</span>
         </div>
       )}
-      {item.description_html && (
-        <div dangerouslySetInnerHTML={{ __html: item.description_html }} />
+      {description_html && (
+        <div dangerouslySetInnerHTML={{ __html: description_html }} />
       )}
-      {item.source && (
-        <a href={item.source.url} target="_blank" rel="noopener noreferrer">
-          Source: {item.source.title}
+      {source && (
+        <a href={source.url} target="_blank" rel="noopener noreferrer">
+          Source: {source.title}
         </a>
       )}
     </article>
   )
+}
+
+const ContentItem = ({ item }) => {
+  if (item.__typename === 'ArenaBlock') {
+    return <ArenaBlock item={item} />
+  }
+  return null
 }
 
 ContentItem.propTypes = {
