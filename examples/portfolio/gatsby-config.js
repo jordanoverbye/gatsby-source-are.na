@@ -24,7 +24,6 @@ module.exports = {
           '2db187bcb9fe61545222381128aba06a72dfcf73a62c291e835f8e344c1d3881',
         channelSlugs: [
           'gatsby-source-arena-portfolio',
-          'gatsby-source-are-na-test',
         ],
       },
     },
