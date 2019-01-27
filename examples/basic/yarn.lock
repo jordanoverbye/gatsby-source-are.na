@@ -4999,10 +4999,10 @@ gatsby-react-router-scroll@^2.0.3:
     scroll-behavior "^0.9.9"
     warning "^3.0.0"
 
-gatsby-source-are.na@^0.0.5:
-  version "0.0.5"
-  resolved "https://registry.yarnpkg.com/gatsby-source-are.na/-/gatsby-source-are.na-0.0.5.tgz#75b600174a30905dcc57d94098e721302b8b0488"
-  integrity sha512-64znng7ScrxMLhcULdeCxBhoQhW9bPLQdSszxDQXpD5vp/d7id4pPHFr9UclmfqsYorV8GVXnpNDAeCajKE87Q==
+gatsby-source-are.na@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/gatsby-source-are.na/-/gatsby-source-are.na-1.0.0.tgz#fb86b273c5e83df79809b484a3d30c1fad296564"
+  integrity sha512-2k2ItyKySQoJE57S4MsLvF7J8YtIXbAVzIPy2koubsZfNCjpDmZNjCKTbeuPYlbq6IaK/s1EdMkoCZIpzjzcng==
   dependencies:
     are.na "^0.1.1"
     gatsby-source-filesystem "^2.0.16"
