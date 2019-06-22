@@ -19,7 +19,7 @@ exports.sourceNodes = async (helpers, configOptions) => {
 
       // Map over every item in the channel and either return null or the node id of the child.
       // We need the child node ids to make a parent/child connection
-      const channelChildrenNodeIds = await Promise.all(
+      let channelChildrenNodeIds = await Promise.all(
         channel.contents.map(async item => {
           if (item.base_class === 'Block') {
             return await createArenaBlockNode(item, channelNodeId, helpers);
@@ -56,7 +56,11 @@ exports.sourceNodes = async (helpers, configOptions) => {
             return innerChannelNodeId;
           }
         })
-      ).filter(i => i);
+      )
+
+      if (channelChildrenNodeIds !== null) {
+        channelChildrenNodeIds = channelChildrenNodeIds.filter(i => i);
+      }
 
       await createArenaChannelNode(
         channelNodeId,
