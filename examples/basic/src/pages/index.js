@@ -21,10 +21,6 @@ const IndexPage = ({ children }) => (
                 title
                 content_html
                 description_html
-                source {
-                  url
-                  title
-                }
                 image {
                   childImageSharp {
                     fluid(maxWidth: 1204) {
